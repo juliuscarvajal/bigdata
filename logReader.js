@@ -13,12 +13,15 @@ var folder = 'data';
 
 var commit = function(json) {
     db.sourceData.insert(json, function (err, docs) {
-        log("DB Insert Completed: " + docs.toString() + "\r");
+        if (err)
+            log(err);
+        else
+            log('DB Insert Completed ' + JSON.stringify(json));
     });
 };
 
-var data2json = function(data) {    
-    setImmediate(function() {
+var data2json = function(data) {
+    //setImmediate(function() {
         var json = {
             timestamp: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.exec(data)[0],
             location: /\d+,\d+/.exec(data)[0],
@@ -26,28 +29,32 @@ var data2json = function(data) {
             observatory: /[A-Z]{2}/.exec(data)[0]
         };
         commit(json);
-    });
+    //});
 };
 
 var onChange = function(f, curr, prev) {
-    //console.log('onChange');
     if (/data\/balloon_\d+\.txt/.exec(f) == null)
         return;
-        
+    
+    log.clear();
     var file = byline(fs.createReadStream(f));
     file.on('data', data2json);
     file.on('end', function() {
         fs.unlink(f, function(err) {
-            //console.log(f + ' deleted.');
+            log(f + ' deleted.');
         });
     });
 };
 
-//var onCreate = ;
+var onCreate = function(f, stat) {
+    // Handle new files
+    log.clear();
+    onChange(f);
+};
 
 var onRemove = function(f, stat) {
     // Handle removed files
-    //console.log('onRemove');
+    log.clear();
 }
 
 fse.ensureDir('./data', function(err) {
@@ -58,16 +65,9 @@ fse.ensureDir('./data', function(err) {
 watch.createMonitor('./data', function(monitor) {
     console.log('watching directory');
     
-    monitor.on("created", function(f, stat) {
-        // Handle new files
-        //console.log('onCreate');
-        onChange(f);
-    });
+    monitor.on("created", onCreate);
     
-    monitor.on("changed", function(f, curr, prev) {
-        //console.log('onChange');
-        onChange(f);
-    });
+    monitor.on("changed", onChange);
 
     monitor.on("removed", onRemove);
 });

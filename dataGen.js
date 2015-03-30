@@ -2,7 +2,7 @@
 'use strict';
 
 const MAX = 10000000;
-
+var log = require('single-line-log').stdout;
 var moment = require('moment');
 var fs = require('fs');
 var fse = require('fs-extra');
@@ -40,20 +40,23 @@ var write = function(i) {
     } 
     */
     
-    var doWrite = function() {
+    var doWrite = (function() {
         var item = helpers.logData(helpers.helpers);
-        return file.write(item + '\n');
-    }
-    
-    if (doWrite)    
-        process.stdout.write("Write: " + i.toLocaleString() + "\r");
-    else {
-        file.once('drain', doWrite);
-    }
-    
+        return file.write(item + '\n', 'utf8', function() {
+            log("Write: " + i.toLocaleString());
+        });
+    })();
+        
     setImmediate(function() {
         write(++i);
     });
 };
+
+file.once('drain', function() {
+    log.clear();
+    log('\nWritting again...');
+    log.clear();
+    write();
+});
 
 write();
