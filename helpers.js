@@ -29,7 +29,7 @@ exports.helpers = {
 
 exports.logData = function(data) {
     var log = [];
-    var d = (data === null) ? helpers :  data;
+    var d = data || exports.helpers;
     Object.keys(d).forEach(function(key) {
         log.push(d[key]());
     });

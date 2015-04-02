@@ -18,6 +18,7 @@
   "homepage": "https://github.com/juliuscarvajal21/bigdata",
   "dependencies": {
     "byline": "^4.2.1",
+    "event-stream": "^3.3.0",
     "fs-extra": "^0.17.0",
     "moment": "^2.9.0",
     "mongojs": "^0.18.2",
